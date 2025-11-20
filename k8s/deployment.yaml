@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: python-app
-        image: yourdockerhub/python-app:latest
+        image: nareshkumarjk02/python-app:latest
         ports:
         - containerPort: 5000
         env:

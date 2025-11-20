@@ -2,9 +2,9 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_IMAGE = "yourdockerhub/python-app"
+        DOCKER_IMAGE = "nareshkumarjk02/python-app"
         SONAR_HOST = "http://localhost:9000"
-        SONAR_TOKEN = credentials('sonar-token')
+        SONAR_TOKEN = credentials('sonarqube-token')
         DOCKERHUB_CREDS = credentials('dockerhub-cred')
     }
     
