@@ -1,53 +1,104 @@
 pipeline {
     agent any
+    
     environment {
-        DOCKER_TAG = "latest"
+        DOCKER_IMAGE = "yourdockerhub/python-app"
+        SONAR_HOST = "http://localhost:9000"
+        SONAR_TOKEN = credentials('sonar-token')
+        DOCKERHUB_CREDS = credentials('dockerhub-cred')
     }
+    
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                script {
-                    echo "Building Docker image..."
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                }
+                checkout scm
             }
         }
-        stage('Test') {
+        
+        stage('Install Dependencies') {
             steps {
-                echo "Running basic tests (replace with actual unit/integration tests)"
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install -r requirements.txt
+                '''
             }
         }
-        stage('Push Docker Image') {
+        
+        stage('Unit Tests') {
             steps {
-                script {
-                    echo "Logging into DockerHub..."
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                        sh "echo \"$DOCKER_PASSWORD\" | docker login -u \"$DOCKER_USERNAME\" --password-stdin"
-                        echo "Pushing Docker image to DockerHub..."
-                        sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                    }
-                }
+                sh '''
+                    . venv/bin/activate
+                    pytest test_app.py -v
+                '''
             }
         }
-        stage('Trigger ArgoCD Update') {
+        
+        stage('SonarQube Analysis') {
             steps {
-                script {
-                    echo "Updating image tag in Kubernetes manifests and pushing to Manifests Repo"
-
-                    echo "Simulating manifest update for ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                }
+                sh '''
+                    sonar-scanner \
+                      -Dsonar.host.url=${SONAR_HOST} \
+                      -Dsonar.login=${SONAR_TOKEN}
+                '''
+            }
+        }
+        
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
+                    docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest
+                '''
+            }
+        }
+        
+        stage('Trivy Scan') {
+            steps {
+                sh '''
+                    trivy image --severity HIGH,CRITICAL \
+                      --format table \
+                      ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                '''
+            }
+        }
+        
+        stage('Docker Push') {
+            steps {
+                sh '''
+                    echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
+                    docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                    docker push ${DOCKER_IMAGE}:latest
+                    docker logout
+                '''
+            }
+        }
+        
+        stage('Update Manifest') {
+            steps {
+                sh '''
+                    # Clone manifest repo
+                    git clone https://github.com/yourusername/k8s-manifests.git
+                    cd k8s-manifests
+                    
+                    # Update image tag in deployment.yaml
+                    sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${BUILD_NUMBER}|g" deployment.yaml
+                    
+                    # Commit and push
+                    git config user.email "jenkins@example.com"
+                    git config user.name "Jenkins"
+                    git add deployment.yaml
+                    git commit -m "Update image to ${BUILD_NUMBER}"
+                    git push origin main
+                '''
             }
         }
     }
+    
     post {
         always {
-            echo "Pipeline finished."
-        }
-        failure {
-            echo "Pipeline failed! Sending Slack notification..."
-        }
-        success {
-            echo "Pipeline succeeded!"
+            sh 'docker system prune -f'
+            cleanWs()
         }
     }
 }
