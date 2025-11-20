@@ -87,15 +87,15 @@ pipeline {
             steps {
                 sh '''
                     # Clone manifest repo
-                    git clone https://github.com/yourusername/k8s-manifests.git
-                    cd k8s-manifests
+                    git clone https://github.com/yourusername/k8s.git
+                    cd k8s
                     
                     # Update image tag in deployment.yaml
                     sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${BUILD_NUMBER}|g" deployment.yaml
                     
                     # Commit and push
-                    git config user.email "jenkins@example.com"
-                    git config user.name "Jenkins"
+                    git config user.email "nareshkumarjk02@gmail.com"
+                    git config user.name "nareshkumarjk02-sys"
                     git add deployment.yaml
                     git commit -m "Update image to ${BUILD_NUMBER}"
                     git push origin main
