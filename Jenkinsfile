@@ -37,7 +37,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 sh '''
-                    sonar-scanner \
+                    sonarqube \
                       -Dsonar.host.url=${SONAR_HOST} \
                       -Dsonar.login=${SONAR_TOKEN}
                 '''
