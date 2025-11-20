@@ -87,8 +87,8 @@ pipeline {
             steps {
                 sh '''
                     # Clone manifest repo
-                    git clone https://github.com/yourusername/k8s.git
-                    cd k8s
+                    git clone https://github.com/yourusername/k8s-manifests.git
+                    cd k8s-manifests
                     
                     # Update image tag in deployment.yaml
                     sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${BUILD_NUMBER}|g" deployment.yaml
