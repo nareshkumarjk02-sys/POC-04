@@ -103,6 +103,36 @@ pipeline {
             }
         }
     }
+     stage('Update K8s Manifests') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'github-token',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_TOKEN'
+                    )]) {
+                        sh """
+                            # Update deployment.yaml with new image tag
+                            sed -i 's|image: ${DOCKER_IMAGE}:.*|image: ${DOCKER_IMAGE}:${BUILD_NUMBER}|' k8s/deployment.yaml
+                            
+                            # Configure git
+                            git config user.email "nareshkumarjk02@gmail.com"
+                            git config user.name "nareshkumarjk02-sys"
+                            
+                            # Check if there are changes
+                            if git diff --quiet k8s/deployment.yaml; then
+                                echo "No changes to commit"
+                            else
+                                # Commit and push changes
+                                git add k8s/deployment.yaml
+                                git commit -m "Update image to ${BUILD_NUMBER} [skip ci]"
+                                git push https://${GIT_USER}:${GIT_TOKEN}@github.com/nareshkumarjk02-sys/POC-04.git HEAD:main
+                            fi
+                        """
+                    }
+                }
+            }
+        }
     
     post {
         always {
