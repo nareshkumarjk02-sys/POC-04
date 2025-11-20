@@ -83,27 +83,7 @@ pipeline {
             }
         }
         
-        stage('Update Manifest') {
-            steps {
-                sh '''
-                    # Clone manifest repo
-                    git clone https://github.com/nareshkumarjk02-sys/k8s-manifests.git
-                    cd k8s-manifests
-                    
-                    # Update image tag in deployment.yaml
-                    sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${BUILD_NUMBER}|g" deployment.yaml
-                    
-                    # Commit and push
-                    git config user.email "nareshkumarjk02@gmail.com"
-                    git config user.name "nareshkumarjk02-sys"
-                    git add deployment.yaml
-                    git commit -m "Update image to ${BUILD_NUMBER}"
-                    git push origin main
-                '''
-            }
-        }
-    }
-     stage('Update K8s Manifests') {
+        stage('Update K8s Manifests') {
             steps {
                 script {
                     withCredentials([usernamePassword(
@@ -133,6 +113,23 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to Minikube') {
+            steps {
+                sh '''
+                    # Apply the updated manifests
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+
+                    # Wait for rollout
+                    kubectl rollout status deployment/python-app
+
+                    # Show deployment info
+                    kubectl get pods
+                    kubectl get services
+                '''
+            }
+        }
+    }
     
     post {
         always {
