@@ -87,7 +87,7 @@ pipeline {
             steps {
                 sh '''
                     # Clone manifest repo
-                    git clone https://github.com/yourusername/k8s-manifests.git
+                    git clone https://github.com/nareshkumarjk02-sys/k8s-manifests.git
                     cd k8s-manifests
                     
                     # Update image tag in deployment.yaml
