@@ -113,16 +113,17 @@ pipeline {
                 }
             }
         }
+        
         stage('Deploy to Minikube') {
             steps {
                 sh '''
                     # Apply the updated manifests
                     kubectl apply -f k8s/deployment.yaml
                     kubectl apply -f k8s/service.yaml
-
+        
                     # Wait for rollout
                     kubectl rollout status deployment/python-app
-
+        
                     # Show deployment info
                     kubectl get pods
                     kubectl get services
