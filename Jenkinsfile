@@ -37,18 +37,11 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Use the SonarScanner tool configured in Jenkins
-                    def scannerHome = tool 'sonar-scanner'
-                    
-                    withSonarQubeEnv('sonarqube') {
-                        sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=my-project \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=${SONAR_HOST} \
-                            -Dsonar.token=${SONAR_TOKEN}
-                        """
-                    }
+                    sh '''
+                    sonarqube \
+                      -Dsonar.host.url=${SONAR_HOST} \
+                      -Dsonar.login=${SONAR_TOKEN}
+                '''
                 }
             }
         }
