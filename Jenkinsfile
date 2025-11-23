@@ -36,11 +36,18 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                sh '''
-                    sonar-scanner \
-                      -Dsonar.host.url=${SONAR_HOST} \
-                      -Dsonar.login=${SONAR_TOKEN}
-                '''
+                withSonarQubeEnv('sonarqube') {
+                    sh '''
+                        /opt/sonar-scanner/bin/sonar-scanner \
+                          -Dsonar.projectKey=python-app \
+                          -Dsonar.projectName="Python App" \
+                          -Dsonar.sources=. \
+                          -Dsonar.exclusions=venv/**,**/__pycache__/**,*.pyc,k8s/**,.git/** \
+                          -Dsonar.language=py \
+                          -Dsonar.python.version=3.9 \
+                          -Dsonar.sourceEncoding=UTF-8
+                    '''
+                }
             }
         }
         
@@ -74,13 +81,13 @@ pipeline {
             }
         }
         
-        stage('Update K8s Manifests') {
+ stage('Update K8s Manifests') {
             steps {
                 script {
-                    withCredentials([usernamePassword(
+                    // Use 'secretText' to bind the token only
+                    withCredentials([string(
                         credentialsId: 'github-token',
-                        usernameVariable: 'GIT_USER',
-                        passwordVariable: 'GIT_TOKEN'
+                        variable: 'GIT_TOKEN' // Binds the Secret Text content to this variable
                     )]) {
                         sh """
                             # Update deployment.yaml with new image tag
@@ -97,7 +104,10 @@ pipeline {
                                 # Commit and push changes
                                 git add k8s/deployment.yaml
                                 git commit -m "Update image to ${BUILD_NUMBER} [skip ci]"
-                                git push https://${GIT_USER}:${GIT_TOKEN}@github.com/nareshkumarjk02-sys/POC-04.git HEAD:main
+                                
+                                # Use the token directly in the URL (GitHub expects PAT for password)
+                                # The username is included in the URL as the user/owner of the token.
+                                git push https://nareshkumarjk02-sys:${GIT_TOKEN}@github.com/nareshkumarjk02-sys/POC-04.git HEAD:main
                             fi
                         """
                     }
