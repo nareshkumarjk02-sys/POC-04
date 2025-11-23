@@ -33,17 +33,20 @@ pipeline {
                 '''
             }
         }
-                
+
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    def scannerHome = tool 'sonar-scanner'   // Jenkins tool name
-        
-                    withSonarQubeEnv('sonarqube') {      // Jenkins SonarQube server name
+                    // 1) Get scanner installation path from Jenkins "Global Tool Configuration"
+                    def scannerHome = tool 'sonar-scanner'
+
+                    // 2) Inject SonarQube env vars from Jenkins "Configure System → SonarQube servers"
+                    withSonarQubeEnv('sonarqube') {
                         sh """
                             "${scannerHome}/bin/sonar-scanner" \
                               -Dsonar.projectKey=my-project \
                               -Dsonar.sources=. \
+                              -Dsonar.java.binaries=target/classes \
                               -Dsonar.host.url="$SONAR_HOST_URL" \
                               -Dsonar.token="$SONAR_AUTH_TOKEN"
                         """
