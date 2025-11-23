@@ -118,9 +118,6 @@ pipeline {
         stage('Deploy to Minikube') {
             steps {
                 script {
-                    // IMPORTANT: Replace '/home/YOUR_USER/.kube/config' with the actual path 
-                    // where your Minikube Kubeconfig file is located on the host machine.
-                    // This file MUST be readable by the 'jenkins' user.
                     withEnv(['KUBECONFIG=/home/nareshkumarjk/.kube/config']) {
                         sh '''
                             # Verify kubectl is talking to the correct cluster
