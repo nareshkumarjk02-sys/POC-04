@@ -39,14 +39,14 @@ pipeline {
                 script {
                     def scannerHome = tool 'sonarqube'   // Jenkins tool name
         
-                    withSonarQubeEnv('sonarqube') {          // Jenkins SonarQube server name
-                        sh '''
-                            "$SCANNER_HOME"/bin/sonar-scanner \
+                    withSonarQubeEnv('sonarqube') {      // Jenkins SonarQube server name
+                        sh """
+                            "${scannerHome}/bin/sonar-scanner" \
                               -Dsonar.projectKey=my-project \
                               -Dsonar.sources=. \
                               -Dsonar.host.url="$SONAR_HOST_URL" \
                               -Dsonar.token="$SONAR_AUTH_TOKEN"
-                        '''
+                        """
                     }
                 }
             }
