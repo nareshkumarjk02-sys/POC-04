@@ -36,18 +36,11 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh '''
-                        /opt/sonar-scanner/bin/sonar-scanner \
-                          -Dsonar.projectKey=python-app \
-                          -Dsonar.projectName="Python App" \
-                          -Dsonar.sources=. \
-                          -Dsonar.exclusions=venv/**,**/__pycache__/**,*.pyc,k8s/**,.git/** \
-                          -Dsonar.language=py \
-                          -Dsonar.python.version=3.9 \
-                          -Dsonar.sourceEncoding=UTF-8
-                    '''
-                }
+                sh '''
+                    sonar-scanner \
+                      -Dsonar.host.url=${SONAR_HOST} \
+                      -Dsonar.login=${SONAR_TOKEN}
+                '''
             }
         }
         
