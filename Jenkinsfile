@@ -118,7 +118,7 @@ pipeline {
         stage('Deploy to Minikube') {
             steps {
                 script {
-                    withEnv(['KUBECONFIG=/home/nareshkumarjk/.kube/config']) {
+                    withEnv(['KUBECONFIG=/var/lib/jenkins/.kube/config']){
                         sh '''
                             # Verify kubectl is talking to the correct cluster
                             kubectl cluster-info
