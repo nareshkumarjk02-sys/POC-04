@@ -81,7 +81,7 @@ pipeline {
             }
         }
         
- stage('Update K8s Manifests') {
+        stage('Update K8s Manifests') {
             steps {
                 script {
                     // Use 'secretText' to bind the token only
@@ -117,18 +117,28 @@ pipeline {
         
         stage('Deploy to Minikube') {
             steps {
-                sh '''
-                    # Apply the updated manifests
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
-        
-                    # Wait for rollout
-                    kubectl rollout status deployment/python-app
-        
-                    # Show deployment info
-                    kubectl get pods
-                    kubectl get services
-                '''
+                script {
+                    // IMPORTANT: Replace '/home/YOUR_USER/.kube/config' with the actual path 
+                    // where your Minikube Kubeconfig file is located on the host machine.
+                    // This file MUST be readable by the 'jenkins' user.
+                    withEnv(['KUBECONFIG=/home/nareshkumarjk/.kube/config']) {
+                        sh '''
+                            # Verify kubectl is talking to the correct cluster
+                            kubectl cluster-info
+                            
+                            # Apply the updated manifests
+                            kubectl apply -f k8s/deployment.yaml
+                            kubectl apply -f k8s/service.yaml
+                
+                            # Wait for rollout
+                            kubectl rollout status deployment/python-app
+                
+                            # Show deployment info
+                            kubectl get pods
+                            kubectl get services
+                        '''
+                    }
+                }
             }
         }
     }
