@@ -37,7 +37,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    def scannerHome = tool 'sonarqube'   // Jenkins tool name
+                    def scannerHome = tool 'sonar-scanner'   // Jenkins tool name
         
                     withSonarQubeEnv('sonarqube') {      // Jenkins SonarQube server name
                         sh """
