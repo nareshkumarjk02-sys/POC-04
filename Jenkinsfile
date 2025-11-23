@@ -36,21 +36,17 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                script {
-                    def scannerHome = tool 'sonar-scanner'
-                    
-                    withSonarQubeEnv('sonarqube') {
-                        sh '''
-                            ${scannerHome}/bin/sonar-scanner \
-                              -Dsonar.projectKey=python-app \
-                              -Dsonar.projectName="Python App" \
-                              -Dsonar.sources=. \
-                              -Dsonar.exclusions=venv/**,**/__pycache__/**,*.pyc,k8s/**,.git/** \
-                              -Dsonar.language=py \
-                              -Dsonar.python.version=3.9 \
-                              -Dsonar.sourceEncoding=UTF-8
-                        '''
-                    }
+                withSonarQubeEnv('sonarqube') {
+                    sh '''
+                        /opt/sonar-scanner/bin/sonar-scanner \
+                          -Dsonar.projectKey=python-app \
+                          -Dsonar.projectName="Python App" \
+                          -Dsonar.sources=. \
+                          -Dsonar.exclusions=venv/**,**/__pycache__/**,*.pyc,k8s/**,.git/** \
+                          -Dsonar.language=py \
+                          -Dsonar.python.version=3.9 \
+                          -Dsonar.sourceEncoding=UTF-8
+                    '''
                 }
             }
         }
