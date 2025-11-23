@@ -47,8 +47,8 @@ pipeline {
                               -Dsonar.projectKey=my-project \
                               -Dsonar.sources=. \
                               -Dsonar.java.binaries=target/classes \
-                              -Dsonar.host.url="$SONAR_HOST_URL" \
-                              -Dsonar.token="$SONAR_AUTH_TOKEN"
+                              -Dsonar.host.url="${SONAR_HOST_URL}" \
+                              -Dsonar.token="${SONAR_AUTH_TOKEN}"
                         """
                     }
                 }
