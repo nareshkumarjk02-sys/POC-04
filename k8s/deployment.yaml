@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: python-app
-        image: nareshkumarjk02/python-app:38
+        image: nareshkumarjk02/python-app:44
         ports:
         - containerPort: 5000
         env:
