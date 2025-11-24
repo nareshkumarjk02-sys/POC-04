@@ -8,7 +8,7 @@ def home():
     return jsonify({
         "message": "Welcome to Python CI/CD Pipeline!",
         "version": os.getenv('APP_VERSION', '1.0.0'),
-        "status": "running slowly...."
+        "status": "running python app with ngrok...."
     })
 
 @app.route('/health')
